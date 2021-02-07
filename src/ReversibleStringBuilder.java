@@ -2,6 +2,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Stack;
+import java.util.stream.IntStream;
 
 /***
  * ReversibleStringBuilder like class with undo action support
@@ -13,6 +14,158 @@ public final class ReversibleStringBuilder implements Serializable, Appendable, 
     }
 
     static final long serialVersionUID = -1L; // serializable ??????????????????
+
+    /**
+     * Save the state of the {@code ReversibleStringBuilder} instance to a stream
+     * (that is, serialize it).
+     *
+     * @serialData the number of characters currently stored in the string
+     * builder ({@code int}), followed by the characters in the
+     * string builder ({@code char[]}).   The length of the
+     * {@code char} array may be greater than the number of
+     * characters currently stored in the string builder, in which
+     * case extra characters are ignored.
+     */
+    private void writeObject(java.io.ObjectOutputStream s)
+            throws java.io.IOException {
+        // TODO
+    }
+
+    /**
+     * readObject is called to restore the state of the StringBuffer from
+     * a stream.
+     */
+    private void readObject(java.io.ObjectInputStream s)
+            throws java.io.IOException, ClassNotFoundException {
+        // TODO
+    }
+
+    /**
+     * Returns the length of this character sequence.  The length is the number
+     * of 16-bit {@code char}s in the sequence.
+     *
+     * @return the number of {@code char}s in this sequence
+     */
+    @Override
+    public int length() {
+        return internalSB.length();
+    }
+
+    /**
+     * Answers an integer hash code for the receiver. Any two
+     * objects which answer <code>true</code> when passed to
+     * <code>.equals</code> must answer the same value for this
+     * method.
+     *
+     * @return the receiver's hash.
+     * @see #equals
+     */
+    @Override
+    public int hashCode() {
+        return internalSB.hashCode();
+    }
+
+    /**
+     * Compares the argument to the receiver, and answers true
+     * if they represent the <em>same</em> object using a class
+     * specific comparison. The implementation in Object answers
+     * true only if the argument is the exact same object as the
+     * receiver (==).
+     *
+     * @param o Object
+     *          the object to compare with this object.
+     * @return boolean <code>true</code>
+     * if the object is the same as this object
+     * <code>false</code>
+     * if it is different from this object.
+     * @see #hashCode
+     */
+    @Override
+    public boolean equals(Object o) {
+        return this.internalSB.equals(o);
+    }
+
+    /**
+     * Returns the {@code char} value at the specified index.  An index ranges from zero
+     * to {@code length() - 1}.  The first {@code char} value of the sequence is at
+     * index zero, the next at index one, and so on, as for array
+     * indexing.
+     *
+     * <p>If the {@code char} value specified by the index is a
+     * <a href="{@docRoot}/java.base/java/lang/Character.html#unicode">surrogate</a>, the surrogate
+     * value is returned.
+     *
+     * @param index the index of the {@code char} value to be returned
+     * @return the specified {@code char} value
+     * @throws IndexOutOfBoundsException if the {@code index} argument is negative or not less than
+     *                                   {@code length()}
+     */
+    @Override
+    public char charAt(int index) {
+        return internalSB.charAt(index);
+    }
+
+    /**
+     * Returns a {@code CharSequence} that is a subsequence of this sequence.
+     * The subsequence starts with the {@code char} value at the specified index and
+     * ends with the {@code char} value at index {@code end - 1}.  The length
+     * (in {@code char}s) of the
+     * returned sequence is {@code end - start}, so if {@code start == end}
+     * then an empty sequence is returned.
+     *
+     * @param start the start index, inclusive
+     * @param end   the end index, exclusive
+     * @return the specified subsequence
+     * @throws IndexOutOfBoundsException if {@code start} or {@code end} are negative,
+     *                                   if {@code end} is greater than {@code length()},
+     *                                   or if {@code start} is greater than {@code end}
+     */
+    @Override
+    public CharSequence subSequence(int start, int end) {
+        return internalSB.subSequence(start, end);
+    }
+
+    /**
+     * Returns a stream of {@code int} zero-extending the {@code char} values
+     * from this sequence.  Any char which maps to a <a
+     * href="{@docRoot}/java.base/java/lang/Character.html#unicode">surrogate code
+     * point</a> is passed through uninterpreted.
+     *
+     * <p>The stream binds to this sequence when the terminal stream operation
+     * commences (specifically, for mutable sequences the spliterator for the
+     * stream is <a href="../util/Spliterator.html#binding"><em>late-binding</em></a>).
+     * If the sequence is modified during that operation then the result is
+     * undefined.
+     *
+     * @return an IntStream of char values from this sequence
+     * @since 1.8
+     */
+    @Override
+    public IntStream chars() {
+        return internalSB.chars();
+    }
+
+    /**
+     * Returns a stream of code point values from this sequence.  Any surrogate
+     * pairs encountered in the sequence are combined as if by {@linkplain
+     * Character#toCodePoint Character.toCodePoint} and the result is passed
+     * to the stream. Any other code units, including ordinary BMP characters,
+     * unpaired surrogates, and undefined code units, are zero-extended to
+     * {@code int} values which are then passed to the stream.
+     *
+     * <p>The stream binds to this sequence when the terminal stream operation
+     * commences (specifically, for mutable sequences the spliterator for the
+     * stream is <a href="../util/Spliterator.html#binding"><em>late-binding</em></a>).
+     * If the sequence is modified during that operation then the result is
+     * undefined.
+     *
+     * @return an IntStream of Unicode code points from this sequence
+     * @since 1.8
+     */
+    @Override
+    public IntStream codePoints() {
+        return internalSB.codePoints();
+    }
 
     private final StringBuilder internalSB;
     private final Stack<Reversible> operationHistory = new Stack<>();
@@ -128,7 +281,7 @@ public final class ReversibleStringBuilder implements Serializable, Appendable, 
     }
 
     public ReversibleStringBuilder append(char[] str) {
-        return insert(length(),str);
+        return insert(length(), str);
     }
 
     /**
@@ -173,7 +326,7 @@ public final class ReversibleStringBuilder implements Serializable, Appendable, 
      * @throws StringIndexOutOfBoundsException {@inheritDoc}
      */
     public ReversibleStringBuilder delete(int start, int end) {
-        return replace(start,end,"");
+        return replace(start, end, "");
     }
 
     /**
@@ -197,9 +350,9 @@ public final class ReversibleStringBuilder implements Serializable, Appendable, 
 
         str = Objects.requireNonNullElse(str, DEFAULT_STRING_VALUE);
         int strLen = str.length();
-        Reversible reverseInsOp = (strLen==0) ? () -> {
+        Reversible reverseInsOp = (strLen == 0) ? () -> {
         } : () -> {
-            internalSB.delete(start, start+strLen);
+            internalSB.delete(start, start + strLen);
         };
 
         operationHistory.push(() -> {
@@ -207,7 +360,7 @@ public final class ReversibleStringBuilder implements Serializable, Appendable, 
             reverseInsOp.Reverse();
         });
 
-        internalSB.replace(start,end,str);
+        internalSB.replace(start, end, str);
         return this;
     }
 
@@ -216,14 +369,14 @@ public final class ReversibleStringBuilder implements Serializable, Appendable, 
      */
     public ReversibleStringBuilder insert(int index, char[] str, int offset,
                                           int len) {
-//TODO
+        return insert(index, Arrays.copyOfRange(Objects.requireNonNullElse(str, DEFAULT_CHAR_ARRAY_VALUE), offset, offset + len));
     }
 
     /**
      * @throws StringIndexOutOfBoundsException {@inheritDoc}
      */
     public ReversibleStringBuilder insert(int offset, Object obj) {
-
+        return replace(offset, offset, Objects.requireNonNullElse(obj.toString(), DEFAULT_STRING_VALUE));
     }
 
     /**
@@ -239,14 +392,14 @@ public final class ReversibleStringBuilder implements Serializable, Appendable, 
      * @throws StringIndexOutOfBoundsException {@inheritDoc}
      */
     public ReversibleStringBuilder insert(int offset, char[] str) {
-
+        return replace(offset, offset, new String(Objects.requireNonNullElse(str, DEFAULT_CHAR_ARRAY_VALUE)));
     }
 
     /**
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
     public ReversibleStringBuilder insert(int dstOffset, CharSequence s) {
-
+        return insert(dstOffset, s.toString());
     }
 
     /**
@@ -254,97 +407,137 @@ public final class ReversibleStringBuilder implements Serializable, Appendable, 
      */
     public ReversibleStringBuilder insert(int dstOffset, CharSequence s,
                                           int start, int end) {
-
+        return insert(dstOffset, s.subSequence(start, end));
     }
 
     /**
      * @throws StringIndexOutOfBoundsException {@inheritDoc}
      */
     public ReversibleStringBuilder insert(int offset, boolean b) {
-
+        return insert(offset, Boolean.toString(b));
     }
 
     /**
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
     public ReversibleStringBuilder insert(int offset, char c) {
-
+        return insert(offset, Character.toString(c));
     }
 
     /**
      * @throws StringIndexOutOfBoundsException {@inheritDoc}
      */
     public ReversibleStringBuilder insert(int offset, int i) {
-
+        return insert(offset, Integer.toString(i));
     }
 
     /**
      * @throws StringIndexOutOfBoundsException {@inheritDoc}
      */
     public ReversibleStringBuilder insert(int offset, long l) {
-
+        return insert(offset, Long.toString(l));
     }
 
     /**
      * @throws StringIndexOutOfBoundsException {@inheritDoc}
      */
     public ReversibleStringBuilder insert(int offset, float f) {
-
+        return insert(offset, Float.toString(f));
     }
 
     /**
      * @throws StringIndexOutOfBoundsException {@inheritDoc}
      */
     public ReversibleStringBuilder insert(int offset, double d) {
-
+        return insert(offset, Double.toString(d));
     }
 
     public int indexOf(String str) {
-
+        return internalSB.indexOf(str);
     }
 
     public int indexOf(String str, int fromIndex) {
-
+        return internalSB.indexOf(str, fromIndex);
     }
 
     public int lastIndexOf(String str) {
-
+        return internalSB.lastIndexOf(str);
     }
 
     public int lastIndexOf(String str, int fromIndex) {
-
+        return internalSB.lastIndexOf(str, fromIndex);
     }
 
     public ReversibleStringBuilder reverse() {
-
+        operationHistory.push(() -> {
+            internalSB.reverse();
+        });
+        internalSB.reverse();
+        return this;
     }
 
     public String toString() {
-
+        return internalSB.toString();
     }
 
-    /**
-     * Save the state of the {@code ReversibleStringBuilder} instance to a stream
-     * (that is, serialize it).
-     *
-     * @serialData the number of characters currently stored in the string
-     * builder ({@code int}), followed by the characters in the
-     * string builder ({@code char[]}).   The length of the
-     * {@code char} array may be greater than the number of
-     * characters currently stored in the string builder, in which
-     * case extra characters are ignored.
-     */
-    private void writeObject(java.io.ObjectOutputStream s)
-            throws java.io.IOException {
-
+    public int capacity() {
+        return internalSB.capacity();
     }
 
-    /**
-     * readObject is called to restore the state of the StringBuffer from
-     * a stream.
-     */
-    private void readObject(java.io.ObjectInputStream s)
-            throws java.io.IOException, ClassNotFoundException {
+    public int codePointAt(int index) {
+        return internalSB.codePointAt(index);
+    }
 
+    public int codePointBefore(int index) {
+        return codePointBefore(index);
+    }
+
+    public int codePointCount(int beginIndex, int endIndex) {
+        return codePointCount(beginIndex, endIndex);
+    }
+
+    public int offsetByCodePoints(int index, int codePointOffset) {
+        return offsetByCodePoints(index, codePointOffset);
+    }
+
+    public String substring(int start, int end) {
+        return substring(start, end);
+    }
+
+    public String substring(int start) {
+        return substring(start);
+    }
+
+    public void ensureCapacity(int minimumCapacity) {
+        ensureCapacity(minimumCapacity);
+    }
+
+    public void getChars(int srcBegin, int srcEnd, char[] dst, int dstBegin) {
+        internalSB.getChars(srcBegin, srcEnd, dst, dstBegin);
+    }
+
+    public void setCharAt(int index, char ch) {
+        replace(index, index + 1, String.valueOf(ch));
+    }
+
+    public void setLength(int newLength) {
+        int len = length();
+        String nullChStr = String.valueOf('\u0000');
+
+        if (len > newLength) {
+            replace(len, newLength, nullChStr.repeat(newLength - len));
+        } else if (len < newLength) {
+            append(nullChStr.repeat(len - newLength));
+        }
+
+        internalSB.setLength(newLength);
+    }
+
+    public void trimToSize() {
+        internalSB.trimToSize();
+    }
+
+    public void Undo() {
+        operationHistory.pop().Reverse();
     }
 }
