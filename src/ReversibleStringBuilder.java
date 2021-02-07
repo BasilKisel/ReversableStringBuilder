@@ -1,17 +1,14 @@
-import jdk.jshell.spi.ExecutionControl;
-
-import java.io.IOException;
 import java.io.Serializable;
-import java.nio.CharBuffer;
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.Stack;
-import java.util.stream.IntStream;
 
 /***
  * ReversibleStringBuilder like class with undo action support
  */
-public final class ReversibleStringBuilder implements Serializable , Appendable , CharSequence , Comparable<ReversibleStringBuilder> {
+public final class ReversibleStringBuilder implements Serializable, Appendable, CharSequence, Comparable<ReversibleStringBuilder> {
 
-    private interface Reversible{
+    private interface Reversible {
         public void Reverse();
     }
 
@@ -19,6 +16,9 @@ public final class ReversibleStringBuilder implements Serializable , Appendable 
 
     private final StringBuilder internalSB;
     private final Stack<Reversible> operationHistory = new Stack<>();
+
+    private static final char[] DEFAULT_CHAR_ARRAY_VALUE = new char[]{'n', 'u', 'l', 'l'};
+    private static final String DEFAULT_STRING_VALUE = "null";
 
     /**
      * Constructs a string builder with no characters in it and an
@@ -32,9 +32,9 @@ public final class ReversibleStringBuilder implements Serializable , Appendable 
      * Constructs a string builder with no characters in it and an
      * initial capacity specified by the {@code capacity} argument.
      *
-     * @param      capacity  the initial capacity.
-     * @throws     NegativeArraySizeException  if the {@code capacity}
-     *               argument is less than {@code 0}.
+     * @param capacity the initial capacity.
+     * @throws NegativeArraySizeException if the {@code capacity}
+     *                                    argument is less than {@code 0}.
      */
     public ReversibleStringBuilder(int capacity) {
         this.internalSB = new StringBuilder(capacity);
@@ -45,7 +45,7 @@ public final class ReversibleStringBuilder implements Serializable , Appendable 
      * specified string. The initial capacity of the string builder is
      * {@code 16} plus the length of the string argument.
      *
-     * @param   str   the initial contents of the buffer.
+     * @param str the initial contents of the buffer.
      */
     public ReversibleStringBuilder(String str) {
         this.internalSB = new StringBuilder(str);
@@ -57,7 +57,7 @@ public final class ReversibleStringBuilder implements Serializable , Appendable 
      * the string builder is {@code 16} plus the length of the
      * {@code CharSequence} argument.
      *
-     * @param      seq   the sequence to copy.
+     * @param seq the sequence to copy.
      */
     public ReversibleStringBuilder(CharSequence seq) {
         this.internalSB = new StringBuilder(seq);
@@ -74,33 +74,23 @@ public final class ReversibleStringBuilder implements Serializable , Appendable 
      * {@link java.text.Collator}.
      *
      * @param another the {@code ReversibleStringBuilder} to be compared with
-     *
-     * @return  the value {@code 0} if this {@code ReversibleStringBuilder} contains the same
+     * @return the value {@code 0} if this {@code ReversibleStringBuilder} contains the same
      * character sequence as that of the argument {@code ReversibleStringBuilder}; a negative integer
      * if this {@code ReversibleStringBuilder} is lexicographically less than the
      * {@code ReversibleStringBuilder} argument; or a positive integer if this {@code ReversibleStringBuilder}
      * is lexicographically greater than the {@code ReversibleStringBuilder} argument.
-     *
      * @since 11
      */
-    @Override
     public int compareTo(ReversibleStringBuilder another) {
         return this.internalSB.compareTo(another.internalSB);
     }
 
     public ReversibleStringBuilder append(Object obj) {
-        int start = internalSB.length();
-        int end = start + obj.toString().length();
-        operationHistory.push(() -> {
-            internalSB.delete(start, end);
-        });
-        internalSB.append(obj);
-        return this;
+        return insert(internalSB.length(), Objects.requireNonNullElse(obj, DEFAULT_STRING_VALUE).toString());
     }
 
-    @Override
     public ReversibleStringBuilder append(String str) {
-
+        return append((Object) str);
     }
 
     /**
@@ -119,115 +109,119 @@ public final class ReversibleStringBuilder implements Serializable , Appendable 
      * <i>n</i>; otherwise, it is equal to the character at index <i>k-n</i>
      * in the argument {@code sb}.
      *
-     * @param   sb   the {@code StringBuffer} to append.
-     * @return  a reference to this object.
+     * @param sb the {@code StringBuffer} to append.
+     * @return a reference to this object.
      */
     public ReversibleStringBuilder append(StringBuffer sb) {
-
+        return append((Object) sb);
     }
 
-    @Override
     public ReversibleStringBuilder append(CharSequence s) {
-
-    }
-
-    /**
-     * @throws     IndexOutOfBoundsException {@inheritDoc}
-     */
-    @Override
-    public ReversibleStringBuilder append(CharSequence s, int start, int end) {
-
-    }
-
-    @Override
-    public ReversibleStringBuilder append(char[] str) {
-
+        return append((Object) s);
     }
 
     /**
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    @Override
+    public ReversibleStringBuilder append(CharSequence s, int start, int end) {
+        return append(Objects.requireNonNullElse(s, DEFAULT_STRING_VALUE).subSequence(start, end));
+    }
+
+    public ReversibleStringBuilder append(char[] str) {
+        return insert(length(),str);
+    }
+
+    /**
+     * @throws IndexOutOfBoundsException {@inheritDoc}
+     */
     public ReversibleStringBuilder append(char[] str, int offset, int len) {
-
+        return append(Arrays.copyOfRange(Objects.requireNonNullElse(str, DEFAULT_CHAR_ARRAY_VALUE), offset, offset + len));
     }
 
-    @Override
     public ReversibleStringBuilder append(boolean b) {
-
+        return append(Boolean.toString(b));
     }
 
-    @Override
     public ReversibleStringBuilder append(char c) {
-
+        return append(Character.toString(c));
     }
 
-    @Override
     public ReversibleStringBuilder append(int i) {
-
+        return append(Integer.toString(i));
     }
 
-    @Override
     public ReversibleStringBuilder append(long lng) {
-
+        return append(Long.toString(lng));
     }
 
-    @Override
     public ReversibleStringBuilder append(float f) {
-
+        return append(Float.toString(f));
     }
 
-    @Override
     public ReversibleStringBuilder append(double d) {
-
+        return append(Double.toString(d));
     }
 
     /**
      * @since 1.5
      */
-    @Override
     public ReversibleStringBuilder appendCodePoint(int codePoint) {
-
+        return append(Character.toChars(codePoint));
     }
 
     /**
      * @throws StringIndexOutOfBoundsException {@inheritDoc}
      */
-    @Override
     public ReversibleStringBuilder delete(int start, int end) {
-
+        return replace(start,end,"");
     }
 
     /**
      * @throws StringIndexOutOfBoundsException {@inheritDoc}
      */
-    @Override
     public ReversibleStringBuilder deleteCharAt(int index) {
-
+        return delete(index, index + 1);
     }
 
     /**
      * @throws StringIndexOutOfBoundsException {@inheritDoc}
      */
-    @Override
     public ReversibleStringBuilder replace(int start, int end, String str) {
+        String deletedString = internalSB.substring(start, end);
+        Reversible reverseDelOp = (start == end)
+                ? () -> {
+        }
+                : () -> {
+            internalSB.insert(start, deletedString);
+        };
 
+        str = Objects.requireNonNullElse(str, DEFAULT_STRING_VALUE);
+        int strLen = str.length();
+        Reversible reverseInsOp = (strLen==0) ? () -> {
+        } : () -> {
+            internalSB.delete(start, start+strLen);
+        };
+
+        operationHistory.push(() -> {
+            reverseDelOp.Reverse();
+            reverseInsOp.Reverse();
+        });
+
+        internalSB.replace(start,end,str);
+        return this;
     }
 
     /**
      * @throws StringIndexOutOfBoundsException {@inheritDoc}
      */
-    @Override
     public ReversibleStringBuilder insert(int index, char[] str, int offset,
-                                int len)
-    {
-
+                                          int len) {
+//TODO
     }
 
     /**
      * @throws StringIndexOutOfBoundsException {@inheritDoc}
      */
-    @Override
     public ReversibleStringBuilder insert(int offset, Object obj) {
 
     }
@@ -235,15 +229,15 @@ public final class ReversibleStringBuilder implements Serializable , Appendable 
     /**
      * @throws StringIndexOutOfBoundsException {@inheritDoc}
      */
-    @Override
     public ReversibleStringBuilder insert(int offset, String str) {
-
+        int start = offset;
+        int end = start + str.length();
+        return replace(start, end, str);
     }
 
     /**
      * @throws StringIndexOutOfBoundsException {@inheritDoc}
      */
-    @Override
     public ReversibleStringBuilder insert(int offset, char[] str) {
 
     }
@@ -251,7 +245,6 @@ public final class ReversibleStringBuilder implements Serializable , Appendable 
     /**
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    @Override
     public ReversibleStringBuilder insert(int dstOffset, CharSequence s) {
 
     }
@@ -259,17 +252,14 @@ public final class ReversibleStringBuilder implements Serializable , Appendable 
     /**
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    @Override
     public ReversibleStringBuilder insert(int dstOffset, CharSequence s,
-                                int start, int end)
-    {
+                                          int start, int end) {
 
     }
 
     /**
      * @throws StringIndexOutOfBoundsException {@inheritDoc}
      */
-    @Override
     public ReversibleStringBuilder insert(int offset, boolean b) {
 
     }
@@ -277,7 +267,6 @@ public final class ReversibleStringBuilder implements Serializable , Appendable 
     /**
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
-    @Override
     public ReversibleStringBuilder insert(int offset, char c) {
 
     }
@@ -285,7 +274,6 @@ public final class ReversibleStringBuilder implements Serializable , Appendable 
     /**
      * @throws StringIndexOutOfBoundsException {@inheritDoc}
      */
-    @Override
     public ReversibleStringBuilder insert(int offset, int i) {
 
     }
@@ -293,7 +281,6 @@ public final class ReversibleStringBuilder implements Serializable , Appendable 
     /**
      * @throws StringIndexOutOfBoundsException {@inheritDoc}
      */
-    @Override
     public ReversibleStringBuilder insert(int offset, long l) {
 
     }
@@ -301,7 +288,6 @@ public final class ReversibleStringBuilder implements Serializable , Appendable 
     /**
      * @throws StringIndexOutOfBoundsException {@inheritDoc}
      */
-    @Override
     public ReversibleStringBuilder insert(int offset, float f) {
 
     }
@@ -309,37 +295,30 @@ public final class ReversibleStringBuilder implements Serializable , Appendable 
     /**
      * @throws StringIndexOutOfBoundsException {@inheritDoc}
      */
-    @Override
     public ReversibleStringBuilder insert(int offset, double d) {
 
     }
 
-    @Override
     public int indexOf(String str) {
 
     }
 
-    @Override
     public int indexOf(String str, int fromIndex) {
 
     }
 
-    @Override
     public int lastIndexOf(String str) {
 
     }
 
-    @Override
     public int lastIndexOf(String str, int fromIndex) {
 
     }
 
-    @Override
     public ReversibleStringBuilder reverse() {
 
     }
 
-    @Override
     public String toString() {
 
     }
@@ -349,11 +328,11 @@ public final class ReversibleStringBuilder implements Serializable , Appendable 
      * (that is, serialize it).
      *
      * @serialData the number of characters currently stored in the string
-     *             builder ({@code int}), followed by the characters in the
-     *             string builder ({@code char[]}).   The length of the
-     *             {@code char} array may be greater than the number of
-     *             characters currently stored in the string builder, in which
-     *             case extra characters are ignored.
+     * builder ({@code int}), followed by the characters in the
+     * string builder ({@code char[]}).   The length of the
+     * {@code char} array may be greater than the number of
+     * characters currently stored in the string builder, in which
+     * case extra characters are ignored.
      */
     private void writeObject(java.io.ObjectOutputStream s)
             throws java.io.IOException {
