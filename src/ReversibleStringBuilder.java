@@ -10,7 +10,7 @@ import java.util.stream.IntStream;
 public final class ReversibleStringBuilder implements Serializable, Appendable, CharSequence, Comparable<ReversibleStringBuilder> {
 
     private interface Reversible {
-        public void Reverse();
+        void Reverse();
     }
 
     static final long serialVersionUID = -1L; // serializable ??????????????????
@@ -82,7 +82,10 @@ public final class ReversibleStringBuilder implements Serializable, Appendable, 
      */
     @Override
     public boolean equals(Object o) {
-        return this.internalSB.equals(o);
+        if (o instanceof ReversibleStringBuilder) {
+            return 0 == internalSB.compareTo(((ReversibleStringBuilder) o).internalSB);
+        }
+        return false;
     }
 
     /**
