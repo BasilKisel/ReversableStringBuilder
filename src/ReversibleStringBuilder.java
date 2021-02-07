@@ -1,6 +1,4 @@
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Objects;
 import java.util.Stack;
 import java.util.stream.IntStream;
 
@@ -173,8 +171,6 @@ public final class ReversibleStringBuilder implements Serializable, Appendable, 
     private final StringBuilder internalSB;
     private final Stack<Reversible> operationHistory = new Stack<>();
 
-    private static final char[] DEFAULT_CHAR_ARRAY_VALUE = new char[]{'n', 'u', 'l', 'l'};
-    private static final String DEFAULT_STRING_VALUE = "null";
 
     /**
      * Constructs a string builder with no characters in it and an
@@ -242,7 +238,7 @@ public final class ReversibleStringBuilder implements Serializable, Appendable, 
     }
 
     public ReversibleStringBuilder append(Object obj) {
-        return insert(internalSB.length(), Objects.requireNonNullElse(obj, DEFAULT_STRING_VALUE).toString());
+        return insert(internalSB.length(), String.valueOf(obj));
     }
 
     public ReversibleStringBuilder append(String str) {
@@ -280,7 +276,7 @@ public final class ReversibleStringBuilder implements Serializable, Appendable, 
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
     public ReversibleStringBuilder append(CharSequence s, int start, int end) {
-        return append(Objects.requireNonNullElse(s, DEFAULT_STRING_VALUE).subSequence(start, end));
+        return append(String.valueOf(s).subSequence(start, end));
     }
 
     public ReversibleStringBuilder append(char[] str) {
@@ -291,7 +287,7 @@ public final class ReversibleStringBuilder implements Serializable, Appendable, 
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
     public ReversibleStringBuilder append(char[] str, int offset, int len) {
-        return append(Arrays.copyOfRange(Objects.requireNonNullElse(str, DEFAULT_CHAR_ARRAY_VALUE), offset, offset + len));
+        return append(String.valueOf(str, offset, len));
     }
 
     public ReversibleStringBuilder append(boolean b) {
@@ -351,7 +347,7 @@ public final class ReversibleStringBuilder implements Serializable, Appendable, 
             internalSB.insert(start, deletedString);
         };
 
-        str = Objects.requireNonNullElse(str, DEFAULT_STRING_VALUE);
+        str = String.valueOf(str); // in case when str eq to NULL
         int strLen = str.length();
         Reversible reverseInsOp = (strLen == 0) ? () -> {
         } : () -> {
@@ -370,16 +366,15 @@ public final class ReversibleStringBuilder implements Serializable, Appendable, 
     /**
      * @throws StringIndexOutOfBoundsException {@inheritDoc}
      */
-    public ReversibleStringBuilder insert(int index, char[] str, int offset,
-                                          int len) {
-        return insert(index, Arrays.copyOfRange(Objects.requireNonNullElse(str, DEFAULT_CHAR_ARRAY_VALUE), offset, offset + len));
+    public ReversibleStringBuilder insert(int index, char[] str, int offset, int len) {
+        return insert(index, String.valueOf(str, offset, len));
     }
 
     /**
      * @throws StringIndexOutOfBoundsException {@inheritDoc}
      */
     public ReversibleStringBuilder insert(int offset, Object obj) {
-        return replace(offset, offset, Objects.requireNonNullElse(obj.toString(), DEFAULT_STRING_VALUE));
+        return replace(offset, offset, String.valueOf(obj));
     }
 
     /**
@@ -395,7 +390,7 @@ public final class ReversibleStringBuilder implements Serializable, Appendable, 
      * @throws StringIndexOutOfBoundsException {@inheritDoc}
      */
     public ReversibleStringBuilder insert(int offset, char[] str) {
-        return replace(offset, offset, new String(Objects.requireNonNullElse(str, DEFAULT_CHAR_ARRAY_VALUE)));
+        return replace(offset, offset, String.valueOf(str));
     }
 
     /**
