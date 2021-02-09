@@ -1,20 +1,22 @@
+package string.builder;
+
 import java.io.Serializable;
 import java.util.Stack;
 import java.util.stream.IntStream;
 
 /***
- * ReversibleStringBuilder like class with undo action support
+ * string.builder.ReversibleStringBuilder like class with undo action support
  */
 public final class ReversibleStringBuilder implements Serializable, Appendable, CharSequence, Comparable<ReversibleStringBuilder> {
 
-    private interface Reversible {
+    private static interface Reversible {
         void Reverse();
     }
 
     static final long serialVersionUID = -1L; // serializable ??????????????????
 
     /**
-     * Save the state of the {@code ReversibleStringBuilder} instance to a stream
+     * Save the state of the {@code string.builder.ReversibleStringBuilder} instance to a stream
      * (that is, serialize it).
      *
      * @serialData the number of characters currently stored in the string
@@ -216,7 +218,7 @@ public final class ReversibleStringBuilder implements Serializable, Appendable, 
     }
 
     /**
-     * Compares two {@code ReversibleStringBuilder} instances lexicographically. This method
+     * Compares two {@code string.builder.ReversibleStringBuilder} instances lexicographically. This method
      * follows the same rules for lexicographical comparison as defined in the
      * {@linkplain java.lang.CharSequence#compare(java.lang.CharSequence,
      * java.lang.CharSequence)  CharSequence.compare(this, another)} method.
@@ -225,12 +227,12 @@ public final class ReversibleStringBuilder implements Serializable, Appendable, 
      * For finer-grained, locale-sensitive String comparison, refer to
      * {@link java.text.Collator}.
      *
-     * @param another the {@code ReversibleStringBuilder} to be compared with
-     * @return the value {@code 0} if this {@code ReversibleStringBuilder} contains the same
-     * character sequence as that of the argument {@code ReversibleStringBuilder}; a negative integer
-     * if this {@code ReversibleStringBuilder} is lexicographically less than the
-     * {@code ReversibleStringBuilder} argument; or a positive integer if this {@code ReversibleStringBuilder}
-     * is lexicographically greater than the {@code ReversibleStringBuilder} argument.
+     * @param another the {@code string.builder.ReversibleStringBuilder} to be compared with
+     * @return the value {@code 0} if this {@code string.builder.ReversibleStringBuilder} contains the same
+     * character sequence as that of the argument {@code string.builder.ReversibleStringBuilder}; a negative integer
+     * if this {@code string.builder.ReversibleStringBuilder} is lexicographically less than the
+     * {@code string.builder.ReversibleStringBuilder} argument; or a positive integer if this {@code string.builder.ReversibleStringBuilder}
+     * is lexicographically greater than the {@code string.builder.ReversibleStringBuilder} argument.
      * @since 11
      */
     public int compareTo(ReversibleStringBuilder another) {
@@ -381,9 +383,7 @@ public final class ReversibleStringBuilder implements Serializable, Appendable, 
      * @throws StringIndexOutOfBoundsException {@inheritDoc}
      */
     public ReversibleStringBuilder insert(int offset, String str) {
-        int start = offset;
-        int end = start + str.length();
-        return replace(start, end, str);
+        return replace(offset, offset, str);
     }
 
     /**
@@ -536,6 +536,8 @@ public final class ReversibleStringBuilder implements Serializable, Appendable, 
     }
 
     public void Undo() {
-        operationHistory.pop().Reverse();
+        if (operationHistory.size() > 0) {
+            operationHistory.pop().Reverse();
+        }
     }
 }
